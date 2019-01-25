@@ -2,5 +2,8 @@
     package="com.wmjmc.reactspeech"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <uses-sdk tools:overrideLibrary="com.facebook.react" />
 </manifest>

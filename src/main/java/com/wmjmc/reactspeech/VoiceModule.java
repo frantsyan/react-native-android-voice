@@ -1,36 +1,40 @@
 package com.wmjmc.reactspeech;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.speech.RecognizerIntent;
 
-import com.facebook.react.bridge.ActivityEventListener;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.support.annotation.Nullable;
+
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import com.wmjmc.reactspeech.LocaleConstants;
 
 /**
  * Created by JMC on 14/01/2016.
  */
-public class VoiceModule extends ReactContextBaseJavaModule implements ActivityEventListener {
+public class VoiceModule extends ReactContextBaseJavaModule {
 
-    static final int REQUEST_SPEECH_ACTIVITY = 1;
-
-    final ReactApplicationContext reactContext;
-    private Promise mVoicepromise;
+    private SpeechRecognizer speechRecognizer;
+    private final ReactApplicationContext reactContext;
+    private Promise mPromise;
 
     public VoiceModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
-        this.reactContext.addActivityEventListener(this);
     }
 
     @Override
@@ -44,77 +48,22 @@ public class VoiceModule extends ReactContextBaseJavaModule implements ActivityE
     }
 
     @ReactMethod
-    public void startSpeech(String prompt, String locale, final Promise promise) {
-        Activity currentActivity = getCurrentActivity();
-
-        if (currentActivity == null) {
-            promise.reject(ErrorConstants.E_ACTIVITY_DOES_NOT_EXIST);
-            return;
-        }
-
-        mVoicepromise = promise;
-
-        final Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, getLocale(locale));
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, getPrompt(prompt));
-        if (intent.resolveActivity(this.reactContext.getPackageManager()) != null) {
-            try{
-                this.reactContext.startActivityForResult(intent, REQUEST_SPEECH_ACTIVITY, null);
-            }catch(Exception ex){
-                mVoicepromise.reject(ErrorConstants.E_FAILED_TO_SHOW_VOICE);
-                mVoicepromise = null;
+    public void startSpeech(final String prompt, final String locale) {
+        reactContext.getCurrentActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, getLocale(locale));
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, getPrompt(prompt));
+                intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+                CustomRecognitionListener listener = new CustomRecognitionListener();
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(reactContext);
+                speechRecognizer.setRecognitionListener(listener);
+                speechRecognizer.startListening(intent);
             }
-        }
-    }
-
-    @Override
-    public void onActivityResult(
-        Activity activity,
-        int requestCode,
-        int resultCode,
-        Intent data
-    ) {
-        this.onActivityResult(requestCode, resultCode, data);
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (mVoicepromise == null) {
-            return;
-        }
-
-        switch (resultCode){
-            case Activity.RESULT_OK:
-                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                mVoicepromise.resolve(result.get(0));
-                mVoicepromise = null;
-                break;
-            case Activity.RESULT_CANCELED:
-                mVoicepromise.reject(ErrorConstants.E_VOICE_CANCELLED);
-                mVoicepromise = null;
-                break;
-            case RecognizerIntent.RESULT_AUDIO_ERROR:
-                mVoicepromise.reject(ErrorConstants.E_AUDIO_ERROR);
-                mVoicepromise = null;
-                break;
-            case RecognizerIntent.RESULT_NETWORK_ERROR:
-                mVoicepromise.reject(ErrorConstants.E_NETWORK_ERROR);
-                mVoicepromise = null;
-                break;
-            case RecognizerIntent.RESULT_NO_MATCH:
-                mVoicepromise.reject(ErrorConstants.E_NO_MATCH);
-                mVoicepromise = null;
-                break;
-            case RecognizerIntent.RESULT_SERVER_ERROR:
-                mVoicepromise.reject(ErrorConstants.E_SERVER_ERROR);
-                mVoicepromise = null;
-                break;
-        }
-    }
-
-    public void onNewIntent(Intent intent) {
-        // no-op
+        });
     }
 
     private String getPrompt(String prompt){
@@ -131,5 +80,61 @@ public class VoiceModule extends ReactContextBaseJavaModule implements ActivityE
         }
 
         return Locale.getDefault().toString();
+    }
+
+    class CustomRecognitionListener implements RecognitionListener {
+
+        public void onReadyForSpeech(Bundle params) {
+
+        }
+
+        public void onBeginningOfSpeech() {
+
+        }
+
+        public void onRmsChanged(float rmsdB) {
+
+        }
+
+        public void onBufferReceived(byte[] buffer) {
+
+        }
+
+        public void onEndOfSpeech() {
+
+        }
+
+        public void onError(int error) {
+
+        }
+
+        public void onResults(Bundle results) {
+            ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            WritableMap params = Arguments.createMap();
+            params.putString("text", matches.get(0));
+            params.putBoolean("isFinal", true);
+            sendEvent(reactContext, "onSpeechAndroidResults", params);
+            speechRecognizer.stopListening();
+        }
+
+        public void onPartialResults(Bundle partialResults) {
+            ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            WritableMap params = Arguments.createMap();
+            params.putString("text", matches.get(0));
+            params.putBoolean("isFinal", false);
+            sendEvent(reactContext, "onSpeechAndroidResults", params);
+        }
+
+        public void onEvent(int eventType, Bundle params) {
+
+        }
+    }
+
+    private void sendEvent(ReactContext reactContext,
+                           String eventName,
+                           @Nullable WritableMap params) {
+        reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 }

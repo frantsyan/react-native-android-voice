@@ -1,11 +1,40 @@
 {
-  "name": "react-native-android-voice",
-  "version": "0.6.0",
-  "description": "A React Native Voice Recognition Module",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_args": [
+    [
+      "react-native-android-voice@0.6.0",
+      "/Users/vladyslav/Documents/Work/PerceptionBox/get-alert"
+    ]
+  ],
+  "_from": "react-native-android-voice@0.6.0",
+  "_id": "react-native-android-voice@0.6.0",
+  "_inBundle": false,
+  "_integrity": "sha512-rsIPmmtf+/MbA/YiZzvQVFg/Pip5m5hwQOuzcVOan96sT8exJ+jJB4hDAt77jX8tfR4L9NJiSP0Qk2mrttkZmw==",
+  "_location": "/react-native-android-voice",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "react-native-android-voice@0.6.0",
+    "name": "react-native-android-voice",
+    "escapedName": "react-native-android-voice",
+    "rawSpec": "0.6.0",
+    "saveSpec": null,
+    "fetchSpec": "0.6.0"
   },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-android-voice/-/react-native-android-voice-0.6.0.tgz",
+  "_spec": "0.6.0",
+  "_where": "/Users/vladyslav/Documents/Work/PerceptionBox/get-alert",
+  "author": {
+    "name": "WMJMC"
+  },
+  "bugs": {
+    "url": "https://github.com/JoaoCnh/react-native-android-voice/issues"
+  },
+  "description": "A React Native Voice Recognition Module",
+  "homepage": "https://github.com/JoaoCnh/react-native-android-voice#readme",
   "keywords": [
     "react",
     "react-native",
@@ -15,13 +44,18 @@
     "text",
     "android"
   ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "react-native-android-voice",
+  "peerDependencies": {
+    "react-native": ">=0.13"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/JoaoCnh/react-native-android-voice.git"
   },
-  "author": "WMJMC",
-  "license": "MIT",
-  "peerDependencies": {
-    "react-native": ">=0.13"
-  }
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.6.0"
 }
