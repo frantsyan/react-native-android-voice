@@ -1,9 +1,7 @@
 package com.wmjmc.reactspeech;
 
-import android.content.Context;
 import android.content.Intent;
 
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -11,7 +9,6 @@ import android.speech.SpeechRecognizer;
 import android.support.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -23,14 +20,10 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Created by JMC on 14/01/2016.
- */
 public class VoiceModule extends ReactContextBaseJavaModule {
 
     private SpeechRecognizer speechRecognizer;
     private final ReactApplicationContext reactContext;
-    private Promise mPromise;
 
     public VoiceModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -105,7 +98,13 @@ public class VoiceModule extends ReactContextBaseJavaModule {
         }
 
         public void onError(int error) {
-
+            if(error == 7) {
+                WritableMap params = Arguments.createMap();
+                params.putString("text", "");
+                params.putBoolean("isFinal", true);
+                sendEvent(reactContext, "onSpeechAndroidResults", params);
+                speechRecognizer.stopListening();
+            }
         }
 
         public void onResults(Bundle results) {
