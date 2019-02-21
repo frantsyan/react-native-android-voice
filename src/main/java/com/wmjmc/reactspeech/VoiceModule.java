@@ -7,6 +7,7 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -98,13 +99,18 @@ public class VoiceModule extends ReactContextBaseJavaModule {
         }
 
         public void onError(int error) {
+            WritableMap params = Arguments.createMap();
             if(error == 7) {
-                WritableMap params = Arguments.createMap();
                 params.putString("text", "");
                 params.putBoolean("isFinal", true);
-                sendEvent(reactContext, "onSpeechAndroidResults", params);
-                speechRecognizer.stopListening();
+            } else {
+                params.putString("text", "");
+                params.putBoolean("isFinal", true);
+                params.putInt("error", error);
             }
+
+            sendEvent(reactContext, "onSpeechAndroidResults", params);
+            speechRecognizer.destroy();
         }
 
         public void onResults(Bundle results) {
@@ -113,7 +119,7 @@ public class VoiceModule extends ReactContextBaseJavaModule {
             params.putString("text", matches.get(0));
             params.putBoolean("isFinal", true);
             sendEvent(reactContext, "onSpeechAndroidResults", params);
-            speechRecognizer.stopListening();
+            speechRecognizer.destroy();
         }
 
         public void onPartialResults(Bundle partialResults) {
