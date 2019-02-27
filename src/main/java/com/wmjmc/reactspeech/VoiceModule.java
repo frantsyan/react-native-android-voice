@@ -106,7 +106,7 @@ public class VoiceModule extends ReactContextBaseJavaModule {
         public void onError(int error) {
             WritableMap params = Arguments.createMap();
 
-            if(error == 7 || error == 6) {
+            if(error == 7 || error == 6 || error == 4) {
                 params.putString("text", "");
                 params.putBoolean("isFinal", true);
             } else {
