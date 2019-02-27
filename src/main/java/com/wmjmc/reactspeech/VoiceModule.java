@@ -60,6 +60,11 @@ public class VoiceModule extends ReactContextBaseJavaModule {
         });
     }
 
+    @ReactMethod
+    public void stopSpeech() {
+        speechRecognizer.destroy();
+    }
+
     private String getPrompt(String prompt){
         if(prompt != null && !prompt.equals("")){
             return prompt;
